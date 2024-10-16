@@ -2,10 +2,8 @@ package com.example.ebookreader;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,13 +13,11 @@ import android.widget.Button;
 import android.widget.GridView;
 
 import androidx.annotation.NonNull;
-import androidx.customview.widget.Openable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.ebookreader.databinding.EbooksViewFragmentBinding;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -59,9 +55,9 @@ public class EbooksViewFragment extends Fragment {
         ebookAdapter = new EbookAdapter(getContext(), ebooks);
         ebookDisplay.setAdapter(ebookAdapter);
 
-        Ebook temp = new Ebook("test", "contenttest1");
+        Ebook temp = new Ebook("test");
         ebookAdapter.add(temp);
-        Ebook temp2 = new Ebook("test2", "contenttest2");
+        Ebook temp2 = new Ebook("test2");
         ebookAdapter.add(temp2);
         ebookAdapter.notifyDataSetChanged();
         NavController navController = NavHostFragment.findNavController(EbooksViewFragment.this);
@@ -71,7 +67,7 @@ public class EbooksViewFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Bundle placeholderBundle = new Bundle();
-                placeholderBundle.putSerializable("ebook", new Ebook("placeholder title", "placeholder content"));
+                placeholderBundle.putSerializable("ebook", new Ebook("placeholder title"));
                 navController.navigate(R.id.action_EbooksViewFragment_to_ReadEbookFragment, placeholderBundle);
             }
         });
@@ -111,6 +107,7 @@ public class EbooksViewFragment extends Fragment {
 
     private Ebook processEbook(Uri ebookContents){
         try {
+            Log.d("URI", ebookContents.toString());
             InputStream inputStream = getActivity().getContentResolver().openInputStream(ebookContents);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder ebookContentLines = new StringBuilder();
@@ -128,10 +125,10 @@ public class EbooksViewFragment extends Fragment {
             }
             String ebookContent = ebookContentLines.toString();
 
-            return new Ebook(ebookTitle, ebookContent);
+            return new Ebook(ebookTitle, ebookContents);
         }catch (Exception e){
             Log.e("ERROR", "Error reading ebook contents");
-            return new Ebook("placeholder", "placeholder ebook content");
+            return new Ebook("error placeholder title");
         }
     }
 

@@ -1,14 +1,21 @@
 package com.example.ebookreader;
 
+import android.net.Uri;
+
 import java.io.Serializable;
 
 public class Ebook implements Serializable {
-    public String title;
-    public String content;
+    private String title;
+    private Uri ebookUri;
 
-    public Ebook(String title, String content) {
+    public Ebook(String title) {
         this.title = title;
-        this.content = content;
+        this.ebookUri = null;
+    }
+
+    public Ebook(String title, Uri ebookUri){
+        this.title = title;
+        this.ebookUri = ebookUri;
     }
 
     public String getTitle() {
@@ -19,11 +26,11 @@ public class Ebook implements Serializable {
         this.title = title;
     }
 
-    public String getContent() {
-        return content;
+    public Uri getEbookUri() {
+        return ebookUri;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setEbookUri(Uri ebookUri) {
+        this.ebookUri = ebookUri;
     }
 }
