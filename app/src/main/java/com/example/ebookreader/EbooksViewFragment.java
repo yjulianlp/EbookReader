@@ -1,5 +1,8 @@
 package com.example.ebookreader;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +18,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.ebookreader.databinding.EbooksViewFragmentBinding;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
@@ -34,6 +38,11 @@ public class EbooksViewFragment extends Fragment {
         binding = EbooksViewFragmentBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
+    }
+
+    public void updateEbooks(Ebook newBook){
+        ebookAdapter.add(newBook);
+        ebookAdapter.notifyDataSetChanged();
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -61,6 +70,17 @@ public class EbooksViewFragment extends Fragment {
             }
         });
 
+        binding.fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("text/plain");
+                startActivityForResult(Intent.createChooser(intent, "Open An Ebook"), 0);
+            }
+        });
+
         ebookDisplay.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -69,6 +89,22 @@ public class EbooksViewFragment extends Fragment {
                 navController.navigate(R.id.action_EbooksViewFragment_to_ReadEbookFragment, clickedEbookInfo);
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if (requestCode==0 && resultCode == Activity.RESULT_OK){
+            if(data != null){
+                Uri ebookContents = data.getData();
+                Ebook newBook = processEbook(ebookContents);
+                ebookAdapter.add(newBook);
+                ebookAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    private Ebook processEbook(Uri ebookContents){
+        return new Ebook("test3");
     }
 
     @Override
