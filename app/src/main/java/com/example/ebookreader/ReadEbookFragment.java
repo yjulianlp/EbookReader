@@ -29,10 +29,12 @@ public class ReadEbookFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         TextView titleString = view.findViewById(R.id.title_string);
         titleString.setText(currentEbook.getTitle());
-        binding.buttonSecond.setOnClickListener(v ->
-                NavHostFragment.findNavController(ReadEbookFragment.this)
-                        .navigate(R.id.action_ReadEbookFragment_to_EbooksViewFragment)
-        );
+        TextView bookContent = view.findViewById(R.id.content_string);
+        bookContent.setText(currentEbook.getContent());
+//        binding.buttonSecond.setOnClickListener(v ->
+//                NavHostFragment.findNavController(ReadEbookFragment.this)
+//                        .navigate(R.id.action_ReadEbookFragment_to_EbooksViewFragment)
+//        );
     }
 
     @Override

@@ -53,19 +53,19 @@ public class EbooksViewFragment extends Fragment {
         ebookAdapter = new EbookAdapter(getContext(), ebooks);
         ebookDisplay.setAdapter(ebookAdapter);
 
-        Ebook temp = new Ebook("test");
+        Ebook temp = new Ebook("test", "contenttest1");
         ebookAdapter.add(temp);
-        Ebook temp2 = new Ebook("test2");
+        Ebook temp2 = new Ebook("test2", "contenttest2");
         ebookAdapter.add(temp2);
         ebookAdapter.notifyDataSetChanged();
         NavController navController = NavHostFragment.findNavController(EbooksViewFragment.this);
 
-        openReadButton.setText("test");
+        openReadButton.setText("test button");
         openReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Bundle placeholderBundle = new Bundle();
-                placeholderBundle.putSerializable("ebook", new Ebook("placeholder title"));
+                placeholderBundle.putSerializable("ebook", new Ebook("placeholder title", "placeholder content"));
                 navController.navigate(R.id.action_EbooksViewFragment_to_ReadEbookFragment, placeholderBundle);
             }
         });
@@ -104,7 +104,7 @@ public class EbooksViewFragment extends Fragment {
     }
 
     private Ebook processEbook(Uri ebookContents){
-        return new Ebook("test3");
+        return new Ebook("test3", "test content for the third ebook");
     }
 
     @Override
