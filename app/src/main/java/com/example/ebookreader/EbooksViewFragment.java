@@ -2,6 +2,7 @@ package com.example.ebookreader;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class EbooksViewFragment extends Fragment {
     ArrayList<Ebook> ebooks;
@@ -50,25 +52,21 @@ public class EbooksViewFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Button openReadButton = view.findViewById(R.id.button_first);
-        ebooks = new ArrayList<Ebook>();
+        logEbookInfo();
+        ebooks = getSavedEbooks();
         ebookDisplay = view.findViewById(R.id.ebook_grid);
         ebookAdapter = new EbookAdapter(getContext(), ebooks);
         ebookDisplay.setAdapter(ebookAdapter);
 
-        Ebook temp = new Ebook("test");
-        ebookAdapter.add(temp);
-        Ebook temp2 = new Ebook("test2");
-        ebookAdapter.add(temp2);
         ebookAdapter.notifyDataSetChanged();
         NavController navController = NavHostFragment.findNavController(EbooksViewFragment.this);
 
-        openReadButton.setText("test button");
+        openReadButton.setText("clear saved ebooks");
         openReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle placeholderBundle = new Bundle();
-                placeholderBundle.putSerializable("ebook", new Ebook("placeholder title"));
-                navController.navigate(R.id.action_EbooksViewFragment_to_ReadEbookFragment, placeholderBundle);
+                clearSavedEbooks(ebookAdapter);
+                ebookAdapter.notifyDataSetChanged();
             }
         });
 
@@ -98,17 +96,19 @@ public class EbooksViewFragment extends Fragment {
         if (requestCode==0 && resultCode == Activity.RESULT_OK){
             if(data != null){
                 Uri ebookContents = data.getData();
-                Ebook newBook = processEbook(ebookContents);
-                ebookAdapter.add(newBook);
+                Ebook newEbook = processEbook(ebookContents, data);
+                ebookAdapter.add(newEbook);
                 ebookAdapter.notifyDataSetChanged();
+                logEbookInfo();
             }
         }
     }
 
-    private Ebook processEbook(Uri ebookContents){
+    private Ebook processEbook(Uri ebookContents, Intent intent){
         try {
             Log.d("URI", ebookContents.toString());
-            InputStream inputStream = getActivity().getContentResolver().openInputStream(ebookContents);
+            InputStream inputStream = requireActivity().getContentResolver().openInputStream(ebookContents);
+            requireActivity().getContentResolver().takePersistableUriPermission(ebookContents, intent.FLAG_GRANT_READ_URI_PERMISSION);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder ebookContentLines = new StringBuilder();
             String ebookTitle = "";
@@ -125,6 +125,8 @@ public class EbooksViewFragment extends Fragment {
             }
             String ebookContent = ebookContentLines.toString();
 
+            Ebook newEbook = new Ebook(ebookTitle, ebookContents);
+            saveEbookInfo(newEbook);
             return new Ebook(ebookTitle, ebookContents);
         }catch (Exception e){
             Log.e("ERROR", "Error reading ebook contents");
@@ -132,6 +134,55 @@ public class EbooksViewFragment extends Fragment {
         }
     }
 
+    private void saveEbookInfo(Ebook ebook){
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("EbooksInfo", getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        String uriString;
+        if(ebook.getEbookUri() != null){
+            uriString = ebook.getEbookUri().toString();
+        }else{
+           uriString = "invalid_uri";
+        }
+        editor.putString(ebook.getTitle(), uriString);
+        editor.apply();
+    }
+
+    private void logEbookInfo(){
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("EbooksInfo", getContext().MODE_PRIVATE);
+        Map<String, ?> allEbooks = sharedPreferences.getAll();
+
+        for(Map.Entry<String, ?> ebook : allEbooks.entrySet()){
+            String title = ebook.getKey();
+            Object uriStringObject = ebook.getValue();
+            Log.d("READ FROM EBOOKINFO", title +" : " + uriStringObject.toString());
+        }
+    }
+
+    private void clearSavedEbooks(EbookAdapter adapter){
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("EbooksInfo", getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        adapter.clear();
+        editor.apply();
+    }
+
+    private ArrayList<Ebook> getSavedEbooks(){
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("EbooksInfo", getContext().MODE_PRIVATE);
+        Map<String, ?> allEbooks = sharedPreferences.getAll();
+        ArrayList<Ebook> savedEbooks = new ArrayList<Ebook>();
+
+        for(Map.Entry<String, ?> ebook : allEbooks.entrySet()){
+            String title = ebook.getKey();
+            String uriString = ebook.getValue().toString();
+            if(!uriString.equals("invalid_uri")){
+                savedEbooks.add(new Ebook(title, Uri.parse(uriString)));
+            }else{
+                savedEbooks.add(new Ebook(title, null));
+            }
+        }
+
+        return savedEbooks;
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();
