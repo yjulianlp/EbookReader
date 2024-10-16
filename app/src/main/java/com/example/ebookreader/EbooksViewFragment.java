@@ -5,11 +5,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.ebookreader.databinding.EbooksViewFragmentBinding;
@@ -47,14 +49,21 @@ public class EbooksViewFragment extends Fragment {
         Ebook temp2 = new Ebook("test2");
         ebookAdapter.add(temp2);
         ebookAdapter.notifyDataSetChanged();
+        NavController navController = NavHostFragment.findNavController(EbooksViewFragment.this);
 
         Log.d("BooksViewFragment", "Button: " + openReadButton);
         openReadButton.setText("test");
         openReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NavHostFragment.findNavController(EbooksViewFragment.this)
-                        .navigate(R.id.action_BooksViewFragment_to_ReadBookFragment);
+                navController.navigate(R.id.action_BooksViewFragment_to_ReadBookFragment);
+            }
+        });
+
+        ebookDisplay.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                navController.navigate(R.id.action_BooksViewFragment_to_ReadBookFragment);
             }
         });
     }
