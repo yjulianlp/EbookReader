@@ -2,8 +2,10 @@ package com.example.ebookreader;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,7 @@ import android.widget.Button;
 import android.widget.GridView;
 
 import androidx.annotation.NonNull;
+import androidx.customview.widget.Openable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -20,6 +23,9 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.ebookreader.databinding.EbooksViewFragmentBinding;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class EbooksViewFragment extends Fragment {
@@ -104,7 +110,29 @@ public class EbooksViewFragment extends Fragment {
     }
 
     private Ebook processEbook(Uri ebookContents){
-        return new Ebook("test3", "test content for the third ebook");
+        try {
+            InputStream inputStream = getActivity().getContentResolver().openInputStream(ebookContents);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder ebookContentLines = new StringBuilder();
+            String ebookTitle = "";
+            int linesRead = 0;
+            String currentLine;
+
+            while((currentLine = bufferedReader.readLine()) != null){
+                if(linesRead == 0){
+                    ebookTitle = currentLine.trim();
+                }else{
+                    ebookContentLines.append(currentLine).append("\n");
+                }
+                linesRead++;
+            }
+            String ebookContent = ebookContentLines.toString();
+
+            return new Ebook(ebookTitle, ebookContent);
+        }catch (Exception e){
+            Log.e("ERROR", "Error reading ebook contents");
+            return new Ebook("placeholder", "placeholder ebook content");
+        }
     }
 
     @Override
