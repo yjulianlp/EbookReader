@@ -9,11 +9,11 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.example.ebookreader.databinding.BooksViewFragmentBinding;
+import com.example.ebookreader.databinding.ReadEbookFragmentBinding;
 
-public class BooksViewFragment extends Fragment {
+public class ReadEbookFragment extends Fragment {
 
-    private BooksViewFragmentBinding binding;
+    private ReadEbookFragmentBinding binding;
 
     @Override
     public View onCreateView(
@@ -21,7 +21,7 @@ public class BooksViewFragment extends Fragment {
             Bundle savedInstanceState
     ) {
 
-        binding = BooksViewFragmentBinding.inflate(inflater, container, false);
+        binding = ReadEbookFragmentBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
     }
@@ -29,9 +29,9 @@ public class BooksViewFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.buttonFirst.setOnClickListener(v ->
-                NavHostFragment.findNavController(BooksViewFragment.this)
-                        .navigate(R.id.action_BooksViewFragment_to_ReadBookFragment)
+        binding.buttonSecond.setOnClickListener(v ->
+                NavHostFragment.findNavController(ReadEbookFragment.this)
+                        .navigate(R.id.action_ReadBookFragment_to_BooksViewFragment)
         );
     }
 

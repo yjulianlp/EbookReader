@@ -3,26 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/BooksView">
+    app:startDestination="@id/EbooksView">
 
     <fragment
-        android:id="@+id/BooksView"
-        android:name="com.example.ebookreader.BooksViewFragment"
+        android:id="@+id/EbooksView"
+        android:name="com.example.ebookreader.EbooksViewFragment"
         android:label="@string/first_fragment_label"
-        tools:layout="@layout/books_view_fragment">
+        tools:layout="@layout/ebooks_view_fragment">
 
         <action
             android:id="@+id/action_BooksViewFragment_to_ReadBookFragment"
-            app:destination="@id/ReadBookFragment" />
+            app:destination="@id/ReadEbookFragment" />
     </fragment>
     <fragment
-        android:id="@+id/ReadBookFragment"
-        android:name="com.example.ebookreader.ReadBookFragment"
+        android:id="@+id/ReadEbookFragment"
+        android:name="com.example.ebookreader.ReadEbookFragment"
         android:label="@string/second_fragment_label"
-        tools:layout="@layout/read_book_fragment">
+        tools:layout="@layout/read_ebook_fragment">
 
         <action
             android:id="@+id/action_ReadBookFragment_to_BooksViewFragment"
-            app:destination="@id/BooksView" />
+            app:destination="@id/EbooksView" />
     </fragment>
 </navigation>
