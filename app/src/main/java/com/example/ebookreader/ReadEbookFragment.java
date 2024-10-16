@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -14,13 +15,11 @@ import com.example.ebookreader.databinding.ReadEbookFragmentBinding;
 public class ReadEbookFragment extends Fragment {
 
     private ReadEbookFragmentBinding binding;
+    Ebook currentEbook;
 
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
-
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        currentEbook = (Ebook) getArguments().getSerializable("ebook");
         binding = ReadEbookFragmentBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
@@ -28,10 +27,11 @@ public class ReadEbookFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        TextView titleString = view.findViewById(R.id.title_string);
+        titleString.setText(currentEbook.getTitle());
         binding.buttonSecond.setOnClickListener(v ->
                 NavHostFragment.findNavController(ReadEbookFragment.this)
-                        .navigate(R.id.action_ReadBookFragment_to_BooksViewFragment)
+                        .navigate(R.id.action_ReadEbookFragment_to_EbooksViewFragment)
         );
     }
 

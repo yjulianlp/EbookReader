@@ -51,19 +51,22 @@ public class EbooksViewFragment extends Fragment {
         ebookAdapter.notifyDataSetChanged();
         NavController navController = NavHostFragment.findNavController(EbooksViewFragment.this);
 
-        Log.d("BooksViewFragment", "Button: " + openReadButton);
         openReadButton.setText("test");
         openReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                navController.navigate(R.id.action_BooksViewFragment_to_ReadBookFragment);
+                Bundle placeholderBundle = new Bundle();
+                placeholderBundle.putSerializable("ebook", new Ebook("placeholder title"));
+                navController.navigate(R.id.action_EbooksViewFragment_to_ReadEbookFragment, placeholderBundle);
             }
         });
 
         ebookDisplay.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                navController.navigate(R.id.action_BooksViewFragment_to_ReadBookFragment);
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Bundle clickedEbookInfo = new Bundle();
+                clickedEbookInfo.putSerializable("ebook", ebooks.get(position));
+                navController.navigate(R.id.action_EbooksViewFragment_to_ReadEbookFragment, clickedEbookInfo);
             }
         });
     }

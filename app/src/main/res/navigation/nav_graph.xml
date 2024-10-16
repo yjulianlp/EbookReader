@@ -12,7 +12,7 @@
         tools:layout="@layout/ebooks_view_fragment">
 
         <action
-            android:id="@+id/action_BooksViewFragment_to_ReadBookFragment"
+            android:id="@+id/action_EbooksViewFragment_to_ReadEbookFragment"
             app:destination="@id/ReadEbookFragment" />
     </fragment>
     <fragment
@@ -22,7 +22,7 @@
         tools:layout="@layout/read_ebook_fragment">
 
         <action
-            android:id="@+id/action_ReadBookFragment_to_BooksViewFragment"
+            android:id="@+id/action_ReadEbookFragment_to_EbooksViewFragment"
             app:destination="@id/EbooksView" />
     </fragment>
 </navigation>
