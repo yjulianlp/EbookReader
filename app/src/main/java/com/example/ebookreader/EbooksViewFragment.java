@@ -20,6 +20,8 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.ebookreader.databinding.EbooksViewFragmentBinding;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -143,7 +145,10 @@ public class EbooksViewFragment extends Fragment {
         }else{
            uriString = "invalid_uri";
         }
-        editor.putString(ebook.getTitle(), uriString);
+        String jsonString = "{'URI':'"+uriString+"', 'lastScrollPos':'0'}";
+
+        editor.putString(ebook.getTitle(), jsonString);
+        //editor.putString(ebook.getTitle(), uriString);
         editor.apply();
     }
 
@@ -154,7 +159,14 @@ public class EbooksViewFragment extends Fragment {
         for(Map.Entry<String, ?> ebook : allEbooks.entrySet()){
             String title = ebook.getKey();
             Object uriStringObject = ebook.getValue();
-            Log.d("READ FROM EBOOKINFO", title +" : " + uriStringObject.toString());
+            try{
+                JSONObject valueJson = new JSONObject(ebook.getValue().toString());
+                String uriString = valueJson.getString("URI");
+                String lastScrollPos = valueJson.getString("lastScrollPos");
+                Log.d("READ FROM EBOOKSINFO", "title: "+title+" | Uri: "+uriString+" | lastScrollPos: "+lastScrollPos);
+            }catch (Exception e){
+                Log.d("READ FROM EBOOKSINFO","ERROR READING DATA");
+            }
         }
     }
 
@@ -170,18 +182,24 @@ public class EbooksViewFragment extends Fragment {
         SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("EbooksInfo", getContext().MODE_PRIVATE);
         Map<String, ?> allEbooks = sharedPreferences.getAll();
         ArrayList<Ebook> savedEbooks = new ArrayList<Ebook>();
-
+        JSONObject ebookJson;
         for(Map.Entry<String, ?> ebook : allEbooks.entrySet()){
             String title = ebook.getKey();
-            String uriString = ebook.getValue().toString();
-            if(!uriString.equals("invalid_uri")){
-                savedEbooks.add(new Ebook(title, Uri.parse(uriString)));
-            }else{
+            try {
+                ebookJson = new JSONObject(ebook.getValue().toString());
+                String uriString = ebookJson.getString("URI");
+                int lastScrollPos = Integer.parseInt(ebookJson.getString("lastScrollPos"));
+                if(!uriString.equals("invalid_uri")){
+                    savedEbooks.add(new Ebook(title, Uri.parse(uriString), lastScrollPos));
+                }
+            }catch (Exception e){
                 savedEbooks.add(new Ebook(title, null));
+                Log.d("ERROR", "Error creating JSON object");
             }
         }
         return savedEbooks;
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
