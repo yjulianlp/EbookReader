@@ -27,6 +27,7 @@ public class EbookAdapter extends ArrayAdapter<Ebook> {
         Ebook ebook = getItem(position);
         ImageView cover = view.findViewById(R.id.book_cover_image);
         TextView title = view.findViewById(R.id.book_title_text);
+        cover.setImageResource(R.drawable.cover_image_placeholder);
 
         //add stuff to change cover image
         title.setText(ebook.getTitle());

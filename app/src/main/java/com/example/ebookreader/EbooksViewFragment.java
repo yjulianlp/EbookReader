@@ -180,7 +180,6 @@ public class EbooksViewFragment extends Fragment {
                 savedEbooks.add(new Ebook(title, null));
             }
         }
-
         return savedEbooks;
     }
     @Override
