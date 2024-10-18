@@ -9,6 +9,7 @@ public class Ebook implements Serializable {
     private Uri ebookUri;
     private int lastScrollPos;
 
+
     public Ebook(String title) {
         this.title = title;
         this.ebookUri = null;

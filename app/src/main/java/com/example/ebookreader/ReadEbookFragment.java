@@ -3,6 +3,7 @@ package com.example.ebookreader;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,9 +19,9 @@ import com.example.ebookreader.databinding.ReadEbookFragmentBinding;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class ReadEbookFragment extends Fragment {
 
@@ -50,26 +51,58 @@ public class ReadEbookFragment extends Fragment {
 
         TextView titleString = view.findViewById(R.id.title_string);
         titleString.setText(currentEbook.getTitle());
-        String ebookContent = readEbook(currentEbook.getEbookUri());
+
+        String type = requireContext().getContentResolver().getType(currentEbook.getEbookUri());
+        String ebookContent = "placeholder";
         TextView ebookContentText = view.findViewById(R.id.content_string);
+
+        //read contents based on filetype
+        Log.d("FILE TYPE", type);
+        if(type.equals("text/plain")){
+            ebookContent = readTextEbook(currentEbook.getEbookUri());
+            ebookContentText.setText(ebookContent);
+        }else if(type.equals("application/epub+zip")){
+            StringBuilder contentText = new StringBuilder();
+            ArrayList<String> chapters = readEpubEbookChapters(currentEbook.getEbookUri());
+            int numChapters = chapters.size();
+            for(int i = 0; i < numChapters; i++){
+                Log.d("TEXT", chapters.get(i));
+                String chapterString;
+                if(i == numChapters-1){
+                    chapterString = Html.fromHtml(chapters.get(i), Html.FROM_HTML_MODE_COMPACT).toString();
+                }else{
+                    chapterString = Html.fromHtml(chapters.get(i), Html.FROM_HTML_MODE_COMPACT).toString() + "\n\n";
+                }
+                contentText.append(chapterString);
+
+            }
+            ebookContent = contentText.toString();
+
+        }else{
+            Log.d("OPENING FILE", "FILE WITH NO EXTENSION SELECTED");
+        }
         ebookContentText.setText(ebookContent);
+
+        //resume reading at last position
         nestedScrollView.post(() -> nestedScrollView.scrollTo(0, lastScrollPos));
     }
 
-    private String readEbook(Uri ebookUri){
+    private ArrayList<String> readEpubEbookChapters(Uri ebookContents){
+        EpubParser parser = new EpubParser(requireContext());
+        return parser.readChaptersFromUri(ebookContents);
+    }
+
+    private String readTextEbook(Uri ebookUri){
         try {
             Log.d("READING FROM URI", ebookUri.toString());
             InputStream inputStream = getActivity().getContentResolver().openInputStream(ebookUri);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder ebookContentLines = new StringBuilder();
-            String ebookTitle = "";
             int linesRead = 0;
             String currentLine;
 
             while((currentLine = bufferedReader.readLine()) != null){
-                if(linesRead == 0){
-                    ebookTitle = currentLine.trim();
-                }else{
+                if(linesRead != 0){
                     ebookContentLines.append(currentLine).append("\n");
                 }
                 linesRead++;

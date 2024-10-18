@@ -79,6 +79,7 @@ public class EbooksViewFragment extends Fragment {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"text/plain","application/epub+zip"});
                 startActivityForResult(Intent.createChooser(intent, "Open An Ebook"), 0);
             }
         });
@@ -98,35 +99,37 @@ public class EbooksViewFragment extends Fragment {
         if (requestCode==0 && resultCode == Activity.RESULT_OK){
             if(data != null){
                 Uri ebookContents = data.getData();
-                Ebook newEbook = processEbook(ebookContents, data);
-                ebookAdapter.add(newEbook);
-                ebookAdapter.notifyDataSetChanged();
+                String type = requireContext().getContentResolver().getType(ebookContents);
+                Log.d("FILE TYPE", type);
+                if(type.equals("text/plain")){
+                    Ebook newEbook = processTextEbook(ebookContents, data);
+                    ebookAdapter.add(newEbook);
+                    ebookAdapter.notifyDataSetChanged();
+                }else if(type.equals("application/epub+zip")){
+                    Ebook newEbook = processEpubEbook(ebookContents, data);
+                    ebookAdapter.add(newEbook);
+                    ebookAdapter.notifyDataSetChanged();
+                    Log.d("OPENING FILE", "EPUB FILE SELECTED");
+                }else{
+                    Log.d("OPENING FILE", "FILE WITH NO EXTENSION SELECTED");
+                }
                 logEbookInfo();
             }
         }
     }
 
-    private Ebook processEbook(Uri ebookContents, Intent intent){
+    private Ebook processTextEbook(Uri ebookContents, Intent intent){
+
         try {
             Log.d("URI", ebookContents.toString());
             InputStream inputStream = requireActivity().getContentResolver().openInputStream(ebookContents);
             requireActivity().getContentResolver().takePersistableUriPermission(ebookContents, intent.FLAG_GRANT_READ_URI_PERMISSION);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder ebookContentLines = new StringBuilder();
             String ebookTitle = "";
-            int linesRead = 0;
-            String currentLine;
-
-            while((currentLine = bufferedReader.readLine()) != null){
-                if(linesRead == 0){
-                    ebookTitle = currentLine.trim();
-                }else{
-                    ebookContentLines.append(currentLine).append("\n");
-                }
-                linesRead++;
+            String currentLine = bufferedReader.readLine();
+            if(currentLine!= null){
+                ebookTitle = currentLine.trim();
             }
-            String ebookContent = ebookContentLines.toString();
-
             Ebook newEbook = new Ebook(ebookTitle, ebookContents);
             saveEbookInfo(newEbook);
             return new Ebook(ebookTitle, ebookContents);
@@ -134,6 +137,13 @@ public class EbooksViewFragment extends Fragment {
             Log.e("ERROR", "Error reading ebook contents");
             return new Ebook("error placeholder title");
         }
+    }
+
+    private Ebook processEpubEbook(Uri ebookContents, Intent intent){
+        Ebook newEbook = new Ebook("epub ebook", ebookContents, 0);
+        requireActivity().getContentResolver().takePersistableUriPermission(ebookContents, intent.FLAG_GRANT_READ_URI_PERMISSION);
+        saveEbookInfo(newEbook);
+        return newEbook;
     }
 
     private void saveEbookInfo(Ebook ebook){
@@ -148,7 +158,6 @@ public class EbooksViewFragment extends Fragment {
         String jsonString = "{'URI':'"+uriString+"', 'lastScrollPos':'0'}";
 
         editor.putString(ebook.getTitle(), jsonString);
-        //editor.putString(ebook.getTitle(), uriString);
         editor.apply();
     }
 
@@ -158,7 +167,6 @@ public class EbooksViewFragment extends Fragment {
 
         for(Map.Entry<String, ?> ebook : allEbooks.entrySet()){
             String title = ebook.getKey();
-            Object uriStringObject = ebook.getValue();
             try{
                 JSONObject valueJson = new JSONObject(ebook.getValue().toString());
                 String uriString = valueJson.getString("URI");
