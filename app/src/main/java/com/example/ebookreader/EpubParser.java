@@ -36,7 +36,21 @@ public class EpubParser {
         return allChapters;
     }
 
-    public ArrayList<String> extractEbookChapters(ZipInputStream zipInputStream){
+    public String getEpubTitle(Uri ebookContents){
+        ContentResolver contentResolver = context.getContentResolver();
+        String epubTitle = "placeholder title";
+        try {
+            InputStream inputStream = contentResolver.openInputStream(ebookContents);
+            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+            epubTitle = extractEpubTitle(zipInputStream);
+        } catch (Exception e) {
+            Log.d("GETEPUBTITLE", "FAILED TO READ EPUB TITLE");
+        }
+
+        return epubTitle;
+    }
+
+    private ArrayList<String> extractEbookChapters(ZipInputStream zipInputStream){
         ArrayList<String> chapterContent = new ArrayList<String>();
         try{
             ZipEntry zipEntry = zipInputStream.getNextEntry();
@@ -64,5 +78,36 @@ public class EpubParser {
         }
 
         return chapterContent;
+    }
+
+    private String extractEpubTitle(ZipInputStream zipInputStream){
+        String title = "placeholder title";
+        try{
+            ZipEntry zipEntry = zipInputStream.getNextEntry();
+
+            while(zipEntry!= null){
+                String zipEntryName = zipEntry.getName();
+
+                if(!zipEntry.isDirectory() && zipEntryName.endsWith(".opf")){
+                    StringBuilder opfContent = new StringBuilder();
+                    String current_line;
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(zipInputStream));
+                    while((current_line = reader.readLine())!=null){
+                        opfContent.append(current_line).append("\n");
+                    }
+                    Log.d("READ OPF CONTENT", opfContent.toString());
+                    Document document = Jsoup.parse(opfContent.toString());
+                    title = document.select("dc\\:title").text();
+                    break;
+                }
+                zipInputStream.closeEntry();
+                zipEntry = zipInputStream.getNextEntry();
+            }
+
+        }catch (Exception e){
+            Log.d("EXTRACTING EBOOK TITLE", "ERROR EXTRACTING EBOOK TITLE");
+        }
+
+        return title;
     }
 }

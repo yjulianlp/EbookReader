@@ -140,7 +140,9 @@ public class EbooksViewFragment extends Fragment {
     }
 
     private Ebook processEpubEbook(Uri ebookContents, Intent intent){
-        Ebook newEbook = new Ebook("epub ebook", ebookContents, 0);
+        EpubParser parser = new EpubParser(requireContext());
+        String epubTitle = parser.getEpubTitle(ebookContents);
+        Ebook newEbook = new Ebook(epubTitle, ebookContents, 0);
         requireActivity().getContentResolver().takePersistableUriPermission(ebookContents, intent.FLAG_GRANT_READ_URI_PERMISSION);
         saveEbookInfo(newEbook);
         return newEbook;
