@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,6 +30,8 @@ public class ReadEbookFragment extends Fragment {
     Ebook currentEbook;
     NestedScrollView nestedScrollView;
     int lastScrollPos;
+    ArrayList<String> chapterContentText;
+    int currentChapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -41,12 +44,6 @@ public class ReadEbookFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         nestedScrollView = view.findViewById(R.id.read_ebook_scrollview);
         currentEbook = (Ebook) getArguments().getSerializable("ebook");
-        Log.d("PASSED EBOOK TITLE", currentEbook.getTitle());
-        if(currentEbook.getEbookUri() == null){
-            Log.d("PASSED URI", "is null");
-        }else{
-            Log.d("PASSED URI", currentEbook.getEbookUri().toString());
-        }
         lastScrollPos = currentEbook.getLastScrollPos();
 
         TextView titleString = view.findViewById(R.id.title_string);
@@ -60,28 +57,80 @@ public class ReadEbookFragment extends Fragment {
         Log.d("FILE TYPE", type);
         if(type.equals("text/plain")){
             ebookContent = readTextEbook(currentEbook.getEbookUri());
-            ebookContentText.setText(ebookContent);
         }else if(type.equals("application/epub+zip")){
-            StringBuilder contentText = new StringBuilder();
+            chapterContentText = new ArrayList<String>();
             ArrayList<String> chapters = readEpubEbookChapters(currentEbook.getEbookUri());
             int numChapters = chapters.size();
             for(int i = 0; i < numChapters; i++){
                 Log.d("TEXT", chapters.get(i));
-                String chapterString;
-                if(i == numChapters-1){
-                    chapterString = Html.fromHtml(chapters.get(i), Html.FROM_HTML_MODE_COMPACT).toString();
-                }else{
-                    chapterString = Html.fromHtml(chapters.get(i), Html.FROM_HTML_MODE_COMPACT).toString() + "\n\n";
-                }
-                contentText.append(chapterString);
-
+                String chapterString = Html.fromHtml(chapters.get(i), Html.FROM_HTML_MODE_COMPACT).toString();
+                chapterContentText.add(chapterString);
             }
-            ebookContent = contentText.toString();
+            ebookContent = chapterContentText.get(0);
 
         }else{
             Log.d("OPENING FILE", "FILE WITH NO EXTENSION SELECTED");
         }
         ebookContentText.setText(ebookContent);
+
+        currentChapter = 0;
+        Button nextButton = view.findViewById(R.id.next_chapter_button);
+        Button prevButton = view.findViewById(R.id.previous_chapter_button);
+        if(type.equals("application/epub+zip")) {
+
+            if (currentChapter == 0) {
+                prevButton.setVisibility(View.INVISIBLE);
+            }
+            if (currentChapter == chapterContentText.size() - 1) {
+                nextButton.setVisibility(View.INVISIBLE);
+            }
+
+
+            nextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d("DEBUG", "Next button clicked!");
+                    Log.d("PRESSED NEXT BUTTON", Integer.toString(currentChapter) + "values" + Integer.toString(chapterContentText.size()));
+                    if (currentChapter < chapterContentText.size() - 1) {
+                        currentChapter += 1;
+                        String newChapterText = chapterContentText.get(currentChapter);
+                        nestedScrollView.post(() -> nestedScrollView.scrollTo(0, 0));
+                        ebookContentText.setText(newChapterText);
+                        if (currentChapter == chapterContentText.size() - 1) {
+                            nextButton.setVisibility(View.INVISIBLE);
+                        }
+                        if (prevButton.getVisibility() == View.INVISIBLE) {
+                            prevButton.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }
+            });
+
+            prevButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d("DEBUG", "Next button clicked!");
+                    if (currentChapter > 0) {
+                        currentChapter -= 1;
+                        String newChapterText = chapterContentText.get(currentChapter);
+                        nestedScrollView.post(() -> nestedScrollView.scrollTo(0, 0));
+                        ebookContentText.setText(newChapterText);
+                        if (currentChapter == 0) {
+                            prevButton.setVisibility(View.INVISIBLE);
+                        }
+                        if (nextButton.getVisibility() == View.INVISIBLE) {
+                            nextButton.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }
+            });
+        }else{
+            //prevent buttons from taking space on the layout
+            nextButton.setVisibility(View.GONE);
+            prevButton.setVisibility(View.GONE);
+        }
+
+
 
         //resume reading at last position
         nestedScrollView.post(() -> nestedScrollView.scrollTo(0, lastScrollPos));
