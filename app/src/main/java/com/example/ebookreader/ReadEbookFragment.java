@@ -45,6 +45,7 @@ public class ReadEbookFragment extends Fragment {
         nestedScrollView = view.findViewById(R.id.read_ebook_scrollview);
         currentEbook = (Ebook) getArguments().getSerializable("ebook");
         lastScrollPos = currentEbook.getLastScrollPos();
+        currentChapter = currentEbook.getCurrentChapter();
 
         TextView titleString = view.findViewById(R.id.title_string);
         titleString.setText(currentEbook.getTitle());
@@ -66,18 +67,16 @@ public class ReadEbookFragment extends Fragment {
                 String chapterString = Html.fromHtml(chapters.get(i), Html.FROM_HTML_MODE_COMPACT).toString();
                 chapterContentText.add(chapterString);
             }
-            ebookContent = chapterContentText.get(0);
+            ebookContent = chapterContentText.get(currentChapter);
 
         }else{
             Log.d("OPENING FILE", "FILE WITH NO EXTENSION SELECTED");
         }
         ebookContentText.setText(ebookContent);
-
-        currentChapter = 0;
         Button nextButton = view.findViewById(R.id.next_chapter_button);
         Button prevButton = view.findViewById(R.id.previous_chapter_button);
         if(type.equals("application/epub+zip")) {
-
+            Log.d("OPENING CHAPTER", Integer.toString(currentChapter));
             if (currentChapter == 0) {
                 prevButton.setVisibility(View.INVISIBLE);
             }
@@ -173,7 +172,7 @@ public class ReadEbookFragment extends Fragment {
                 lastScrollPos = nestedScrollView.getScrollY();
                 JSONObject ebookInfoJson = new JSONObject(ebookInfoString);
                 String uriString = ebookInfoJson.getString("URI");
-                String jsonString = "{'URI':'" + uriString + "', 'lastScrollPos':'" + lastScrollPos + "'}";
+                String jsonString = "{'URI':'" + uriString + "', 'lastScrollPos':'" + lastScrollPos + "', 'currentChapter':'" + currentChapter + "'}";
                 editor.putString(currentEbook.getTitle(), jsonString);
                 editor.apply();
             } catch (Exception e) {

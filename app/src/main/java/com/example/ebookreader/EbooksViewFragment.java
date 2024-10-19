@@ -157,7 +157,7 @@ public class EbooksViewFragment extends Fragment {
         }else{
            uriString = "invalid_uri";
         }
-        String jsonString = "{'URI':'"+uriString+"', 'lastScrollPos':'0'}";
+        String jsonString = "{'URI':'"+uriString+"', 'lastScrollPos':'0', 'currentChapter':'0'}";
 
         editor.putString(ebook.getTitle(), jsonString);
         editor.apply();
@@ -198,9 +198,10 @@ public class EbooksViewFragment extends Fragment {
             try {
                 ebookJson = new JSONObject(ebook.getValue().toString());
                 String uriString = ebookJson.getString("URI");
+                int currentChapter = Integer.parseInt(ebookJson.getString("currentChapter"));
                 int lastScrollPos = Integer.parseInt(ebookJson.getString("lastScrollPos"));
                 if(!uriString.equals("invalid_uri")){
-                    savedEbooks.add(new Ebook(title, Uri.parse(uriString), lastScrollPos));
+                    savedEbooks.add(new Ebook(title, Uri.parse(uriString), lastScrollPos, currentChapter));
                 }
             }catch (Exception e){
                 savedEbooks.add(new Ebook(title, null));
