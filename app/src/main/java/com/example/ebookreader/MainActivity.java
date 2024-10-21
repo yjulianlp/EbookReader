@@ -61,6 +61,13 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
+        else if (id == R.id.action_sync){
+            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+
+            overridePendingTransition(0,0);
+        }
 
         return super.onOptionsItemSelected(item);
     }

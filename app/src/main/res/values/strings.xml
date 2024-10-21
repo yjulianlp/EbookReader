@@ -11,4 +11,5 @@
         placeholder
     </string>
     <string name="title_placeholder">EBOOK TITLE</string>
+    <string name="sync">Sync</string>
 </resources>
