@@ -23,6 +23,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("boolean", "TEST", "false")
+        }
+        debug {
+            buildConfigField("boolean", "TEST", "true")
         }
     }
     compileOptions {
@@ -31,6 +35,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 

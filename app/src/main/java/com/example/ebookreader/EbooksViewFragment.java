@@ -46,7 +46,7 @@ public class EbooksViewFragment extends Fragment {
 
     }
 
-    public void updateEbooks(Ebook newBook){
+    public void addEbook(Ebook newBook){
         ebookAdapter.add(newBook);
         ebookAdapter.notifyDataSetChanged();
     }
@@ -59,6 +59,10 @@ public class EbooksViewFragment extends Fragment {
         ebookDisplay = view.findViewById(R.id.ebook_grid);
         ebookAdapter = new EbookAdapter(getContext(), ebooks);
         ebookDisplay.setAdapter(ebookAdapter);
+
+        if(BuildConfig.TEST && ebooks.isEmpty()){
+            addEbook(new Ebook("TEST", null));
+        }
 
         ebookAdapter.notifyDataSetChanged();
         NavController navController = NavHostFragment.findNavController(EbooksViewFragment.this);
